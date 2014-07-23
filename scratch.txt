@@ -1,0 +1,1002 @@
+source openrc admin admin
+keystone tenant-create --name social --description "Viacom Social Group"
+neutron net-create --tenant-id 77e021b585984bd8a0cc392aee42f63c social-win-1 --provider:network_type vlan --provider:physical_network default --provider:segmentation_id 2149
+neutron subnet-create --tenant_id 77e021b585984bd8a0cc392aee42f63c social-win-1 10.240.49.0/24 --no-gateway --allocation-pool start=10.240.49.41,end=10.240.49.250 --dns-nameserver 10.240.10.33 --host-route 'destination=0.0.0.0/0,nexthop=10.240.49.1'
+
+    1  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug || echo "key failed to start" | tee "/opt/stack/status/stack/key.failure"
+    2  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini || echo "q-agt failed to start" | tee "/opt/stack/status/stack/q-agt.failure"
+    3  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf || echo "h-api-cw failed to start" | tee "/opt/stack/status/stack/h-api-cw.failure"
+    4  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf || echo "g-api failed to start" | tee "/opt/stack/status/stack/g-api.failure"
+    5  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf || echo "h-api-cfn failed to start" | tee "/opt/stack/status/stack/h-api-cfn.failure"
+    6  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf || echo "h-api failed to start" | tee "/opt/stack/status/stack/h-api.failure"
+    7  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf || echo "h-eng failed to start" | tee "/opt/stack/status/stack/h-eng.failure"
+    8  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf || echo "ceilometer-api failed to start" | tee "/opt/stack/status/stack/ceilometer-api.failure"
+    9  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf || echo "ceilometer-collector failed to start" | tee "/opt/stack/status/stack/ceilometer-collector.failure"
+   10  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf || echo "ceilometer-acentral failed to start" | tee "/opt/stack/status/stack/ceilometer-acentral.failure"
+   11  cd ; sg libvirtd "ceilometer-agent-compute --config-file /etc/ceilometer/ceilometer.conf" || echo "ceilometer-acompute failed to start" | tee "/opt/stack/status/stack/ceilometer-acompute.failure"
+   12  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf || echo "c-vol failed to start" | tee "/opt/stack/status/stack/c-vol.failure"
+   13  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf || echo "c-bak failed to start" | tee "/opt/stack/status/stack/c-bak.failure"
+   14  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf || echo "c-sch failed to start" | tee "/opt/stack/status/stack/c-sch.failure"
+   15  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf || echo "c-api failed to start" | tee "/opt/stack/status/stack/c-api.failure"
+   16  cd /opt/stack/nova && /usr/bin/nova-objectstore || echo "n-obj failed to start" | tee "/opt/stack/status/stack/n-obj.failure"
+   17  cd /opt/stack/nova && /usr/bin/nova-consoleauth || echo "n-cauth failed to start" | tee "/opt/stack/status/stack/n-cauth.failure"
+   18  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf || echo "n-xvnc failed to start" | tee "/opt/stack/status/stack/n-xvnc.failure"
+   19  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC || echo "n-novnc failed to start" | tee "/opt/stack/status/stack/n-novnc.failure"
+   20  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf || echo "n-sch failed to start" | tee "/opt/stack/status/stack/n-sch.failure"
+   21  cd /opt/stack/nova && /usr/bin/nova-cert || echo "n-crt failed to start" | tee "/opt/stack/status/stack/n-crt.failure"
+   22  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf' || echo "n-cpu failed to start" | tee "/opt/stack/status/stack/n-cpu.failure"
+   23  cd /opt/stack/nova && /usr/bin/nova-conductor || echo "n-cond failed to start" | tee "/opt/stack/status/stack/n-cond.failure"
+   24  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini || echo "q-lbaas failed to start" | tee "/opt/stack/status/stack/q-lbaas.failure"
+   25  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini || echo "q-meta failed to start" | tee "/opt/stack/status/stack/q-meta.failure"
+   26  ovs-vsctl show
+   27  sudo ovs-vsctl show
+   28  ps -ef
+   29  ps -ef | grep kvm
+   30  ls
+   31  cd devstack/
+   32  ./rejoin-stack.sh
+   33  ps -ef | grep rabbit
+   34  sudo /etc/init.d/rabbitmq-server start
+   35  ps -ef| grep rabbit
+   36  ./rejoin-stack.sh
+   37  ps -ef| grep mysql
+   38  sudo /etc/init.d/mysqld start
+   39  ./rejoin-stack.sh
+   40  sudo /sbin/init 6
+   41  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+   42  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+   43  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+   44  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+   45  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+   46  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+   47  cd /opt/stack/nova && /usr/bin/nova-api
+   48  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+   49  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+   50  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+   51  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+   52  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+   53  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+   54  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+   55  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+   56  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+   57  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+   58  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+   59  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+   60  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+   61  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+   62  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+   63  cd /opt/stack/nova && /usr/bin/nova-objectstore
+   64  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+   65  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+   66  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+   67  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+   68  cd /opt/stack/nova && /usr/bin/nova-cert
+   69  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+   70  cd /opt/stack/nova && /usr/bin/nova-conductor
+   71  sudo /etc/init.d/mysqld start
+   72  sudo /etc/init.d/rabbitmq-server start
+   73  cd devstack/
+   74  ls
+   75  ./rejoin-stack.sh
+   76  source openrc
+   77  neutron service-list
+   78  neutron agent-list
+   79  neutron
+   80  source openrc admin admin
+   81  neutron
+   82  nova list
+   83  source openrc admin entertainment
+   84  nova list
+   85  df -h
+   86  nova list
+   87  ps -ef | grep http
+   88  sudo /etc/init.d/httpd start
+   89  sudo chkconfig httpd on
+   90  sudo chkconfig rabbitmq-server on
+   91  sudo chkconfig mysqld on
+   92  ping 10.240.49.43
+   93  cd /opt/stack/images/
+   94  ls
+   95  ls -al
+   96  source ~/devstack/openrc admin admin
+   97  glance help
+   98  glance help image-create
+   99  glance image-create --property hypervisor_type=kvm --progress --file windows_server_2012_r2_standard_eval_kvm_20131117.qcow2 --is-public True --name "windows-2012r2-cloudbase-kvmbare"
+  100  glance image-create --property hypervisor_type=kvm --progress --file windows_server_2012_r2_standard_eval_kvm_20131117.qcow2 --is-public True --name "windows-2012r2-cloudbase-kvmbare" --container-format bare --disk-format qcow2
+  101  glance image-list
+  102  glance image-delete 0f04f60a-a3e1-4078-98a7-c1ec5db7bdbe
+  103   -h
+  104  df -h
+  105  neutron help net-create
+  106  neutron help subnet-create
+  107  neutron net-create --tenant-id 77e021b585984bd8a0cc392aee42f63c social-routed-1 --provider:network_type vlan --provider:physical_network default --provider:segmentation_id 2180
+  108  neutron subnet-create --tenant_id 77e021b585984bd8a0cc392aee42f63c social-routed-1 10.240.80.0/24 --gateway 10.240.80.1 allocation-pool start=10.240.80.41,end=10.240.80.250
+  109  neutron subnet-create --tenant_id 77e021b585984bd8a0cc392aee42f63c social-routed-1 10.240.80.0/24 --gateway 10.240.80.1 --allocation-pool start=10.240.80.41,end=10.240.80.250
+  110  nova help boot
+  111  nova help get-password
+  112  cd
+  113  ls
+  114  nova help get-password
+  115  nova list
+  116  export OS_TENANT_NAME=social
+  117  nova list
+  118  nova get-password
+  119  nova get-password win-kvm-test-1 chris-winkey.pem
+  120  nova get-password win-userdata-test chris-winkey.pem
+  121  source openrc social
+  122  source devstack/openrc social
+  123  nova list
+  124  source devstack/openrc admin social
+  125  nova list
+  126  nova help boot
+  127  nova flavor-list
+  128  nova image-list
+  129  nova keypair-list
+  130  nova boot --flavor 2 --image windows-2012r2-cloudbase-bare --key-name chris-winkey --meta stage=production --meta role=iis flux-stackiis-001.hosting.ad.viacom.com
+  131  nova network-list
+  132  nova boot --flavor 2 --image windows-2012r2-cloudbase-bare --key-name chris-winkey --meta stage=production --meta role=iis --nic --net-id=23522e22-cb8e-4107-83fe-b7937ffec509 flux-stackiis-001.hosting.ad.viacom.com
+  133  nova boot --flavor 2 --image windows-2012r2-cloudbase-bare --key-name chris-winkey --meta stage=production --meta role=iis --nic net-id=23522e22-cb8e-4107-83fe-b7937ffec509 flux-stackiis-001.hosting.ad.viacom.com
+  134  nova get-password 50e6a330-b8a2-4ad5-87e5-92191dc8eb7e
+  135  nova get-password 50e6a330-b8a2-4ad5-87e5-92191dc8eb7e chris-winkey.pem
+  136  nova show 50e6a330-b8a2-4ad5-87e5-92191dc8eb7e
+  137  nova list
+  138  nova show bac267b5-1b42-4e35-a583-ab59462eda48
+  139  nova get-password 50e6a330-b8a2-4ad5-87e5-92191dc8eb7e chris-winkey.pem
+  140  history
+  141  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  142  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  143  cd /opt/stack/nova && /usr/bin/nova-cert
+  144  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+  145  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  146  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  147  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  148  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  149  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  150  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  151  cd /opt/stack/nova && /usr/bin/nova-api
+  152  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  153  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  154  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  155  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  156  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  157  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  158  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  159  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  160  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  161  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  162  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  163  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  164  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  165  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  166  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  167  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  168  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  169  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  170  pwd
+  171  ls
+  172  cd devstack/
+  173  ./rejoin-stack.sh
+  174  cd /opt/stack/devstack/
+  175  ls
+  176  ./rejoin-stack.sh
+  177  cd devstack/
+  178  source openrc admin
+  179  df -h
+  180  cd /opt/stack/logs/screen/screen-c-api.log
+  181  vi /opt/stack/logs/screen/screen-c-api.log
+  182  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 *.log
+  183  cd /opt/stack/logs/screen/
+  184  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 *.log
+  185  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 screen-c-api.log
+  186  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 screen-c-sch.log
+  187  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 screen-c-vol.log
+  188  grep -ri 3b056807-2e4a-4a98-8980-b6d60e250cf1 screen-c-vol.log ls
+  189  ls
+  190  pwd
+  191  cd devstack/
+  192  ls
+  193  source openrc admin
+  194  cinder list
+  195  cinder service-list
+  196  cinder help
+  197  cinder service-disable
+  198  cinder help service-disable
+  199  cinder help service-disable isg-devstack-001.sec1.cloud.viacom.com cinder-volume
+  200  cinder service-disable isg-devstack-001.sec1.cloud.viacom.com cinder-volume
+  201  cinder service-list
+  202  cinder volume-list
+  203  vi /etc/cinder/cinder.conf
+  204  hostname
+  205  vi /etc/cinder/cinder.conf
+  206  cinder --os-username admin --os-tenant-name admin extra-specs-list
+  207  cinder --os-username admin --os-tenant-name admin type-create lvm
+  208  cinder --os-username admin --os-tenant-name admin help
+  209  cinder --os-username admin --os-tenant-name admin type-list
+  210  cinder --os-username admin --os-tenant-name admin type-delete lvm-15k
+  211  cinder --os-username admin --os-tenant-name admin type-delete lvm
+  212  cinder --os-username admin --os-tenant-name admin type-delete  202ef0ac-1af6-460d-8eaf-6397aa6f3b4d
+  213  cinder --os-username admin --os-tenant-name admin type-create lvm_15k
+  214  cinder --os-username admin --os-tenant-name admin type-key lvm_15k set volume_backend_name=lvm15k
+  215  cinder --os-username admin --os-tenant-name admin extra-specs-list
+  216  cinder service-list
+  217  cinder help
+  218  cinder volume-list
+  219  cinder list
+  220  cinder --os-tenant-name=social list
+  221  nova --os-tenant-name=social list
+  222  ps -ef
+  223  nova --os-tenant-name=social list
+  224  cinder help volume-attach
+  225  cinder help attach
+  226  cinder help | more
+  227  nova help volume-attach
+  228  cinder --os-tenant-name=social list
+  229  nova --os-tenant-name=social volume-attach 50e6a330-b8a2-4ad5-87e5-92191dc8eb7e e8134942-4127-46dd-a73f-3a1a5186d349 auto
+  230  nova service-list
+  231  nova --os-tenant-name=social show
+  232  nova --os-tenant-name=social show     4e92cc71-d839-4159-a15c-a7f0c39f5a8f
+  233  cinder
+  234  cinder volume-list
+  235  cinder --os-tenant-name=social list
+  236  cinder --os-tenant-name=social show e8134942-4127-46dd-a73f-3a1a5186d349
+  237  cinder --os-tenant-name=social list
+  238  nova --os-tenant-name=social list
+  239  nova --os-tenant-name=social volume-attach cb8f7bb3-67d2-4d6c-8b03-761e4d077462 e8134942-4127-46dd-a73f-3a1a5186d349 auto
+  240  cinder --os-tenant-name=social list
+  241  cd /opt/stack/devstack/
+  242  ./rejoin-stack.sh
+  243  cd /fluxarchive/
+  244  ls -al
+  245  pwd
+  246  cd /
+  247  ls
+  248  cd /fluxarchive/
+  249  ls -al
+  250  source devstack/openrc admin admin
+  251  keystone list
+  252  keystone tenant-list
+  253  keystone tenant-get 77e021b585984bd8a0cc392aee42f63c
+  254  keystone user-role-list
+  255  cd devstack/
+  256  ./rejoin-stack.sh
+  257  ls
+  258  ./rejoin-stack.sh
+  259  pwd
+  260  sudo yum update
+  261  ps -e
+  262  ps -ef
+  263  top
+  264  ifconfig -a
+  265  ping www.google.com
+  266  uptime
+  267  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  268  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  269  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  270  cd /opt/stack/nova && /usr/bin/nova-api
+  271  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  272  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  273  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  274  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  275  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  276  glance help
+  277  source openrc admin admin
+  278  glance --more
+  279  glance help | more
+  280  glance image-list
+  281  history | grep glance
+  282  pwd
+  283  cd /opt/social/
+  284  ls
+  285  su -
+  286  history | grep image-create
+  287  su -
+  288  df -h
+  289  cd /var/lib/
+  290  ls
+  291  df -h
+  292  df -m
+  293  cd /opt/stack/
+  294  ls
+  295  cd images/
+  296  ls
+  297  ls -al
+  298  du -sh `ls -1`
+  299  cd ..
+  300  du -sh `ls -1`
+  301  cd data/
+  302  ls
+  303  du -sh `ls -1`
+  304  cd glance/
+  305  ls -al
+  306  du -sh `ls -1`
+  307  cd images/
+  308  ls
+  309  du -sh `ls -1`
+  310  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  311  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  312  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  313  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  314  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  315  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  316  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  317  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  318  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  319  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  320  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  321  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  322  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  323  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  324  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  325  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  326  cd /opt/stack/nova && /usr/bin/nova-cert
+  327  cd /opt/stack/nova && /usr/bin/nova-conductor
+  328  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+  329  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  330  ls
+  331  cd devstack/
+  332  ls
+  333  ./rejoin-stack.sh
+  334  ps -ef
+  335  neutron service-list
+  336  ls
+  337  source openrc admin admin
+  338  neutron service-list
+  339  neutron agent-list
+  340  ps -ef
+  341  ps -ef  |grep dhcp
+  342  neutron agent-list
+  343  ./rejoin-stack.sh
+  344  cd devstack/
+  345  ./rejoin-stack.sh
+  346  sudo /sbin/init 6
+  347  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  348  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  349  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  350  cd /opt/stack/nova && /usr/bin/nova-api
+  351  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  352  ps -ef | grep dnsmasw
+  353  ps -ef | grep dnsmasq
+  354  ps -ef | grep dhcp
+  355  sudo kill 8778 8782 8784
+  356  ps -ef | grep dhcp
+  357  sudo kill 3984
+  358  ps -ef | grep dhcp
+  359  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  360  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  361  ; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  362  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  363  neutron agent-list
+  364  netstat -ntlp
+  365  netstat -ntlp | grep python
+  366  ps -ef | grep 5300
+  367  ps -ef | grep 5309
+  368  ps -ef | grep neutron
+  369  netstat -ntlp | grep python
+  370  ps -ef | grep 5318
+  371  ps -ef | grep 5319
+  372  ps -ef | grep 5305
+  373  ps -ef | grep 5312
+  374  ps -ef | grep 5310
+  375  ps -ef | grep 5318
+  376  ps -ef | grep nova-api
+  377  ps -ef | grep neutron-api
+  378  ps -ef | grep api
+  379  ps -ef | grep neutron
+  380  ps -ef | grep neutron | grpe -v dnsmasq
+  381  ps -ef | grep neutron | grep -v dnsmasq
+  382  nestat -ntlp | grep 5219
+  383  netstat -ntlp | grep 5219
+  384  sudo netstat -ntlp | grep 5219
+  385  sudo netstat -ntlp | grep 5325
+  386  ps -ef | grep nova-api
+  387  sudo netstat -ntlp | grep 5298
+  388  vi /etc/nova/nova.conf
+  389  netstat -ntlp
+  390  iptables -L
+  391  sudo iptables -L
+  392  sudo iptables -L | more
+  393  ip netns
+  394  ps -ef | grep dhcp
+  395  rpm -qa | grep -i open
+  396  rpm -ql openvswitch
+  397  rpm -ql openvswitch | more
+  398  ovs-ofctl dump-flows
+  399  ovs-vsctl show
+  400  sudo ovs-ofctl dump-flows
+  401  sudo ovs-vsctl show
+  402  sudo ovs-vsctl show | more
+  403  ps -ef | grep dns
+  404  sudo ovs-vsctl show | more
+  405  sudo ovs-vsctl show | more
+  406  ps -ef | grep kvm | more
+  407  sudo /sbin/init 6
+  408  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  409  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  410  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  411  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  412  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  413  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  414  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  415  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  416  cd /opt/stack/nova && /usr/bin/nova-cert
+  417  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+  418  cd /opt/stack/nova && /usr/bin/nova-conductor
+  419  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  420  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  421  cd devstack/
+  422  ./rejoin-stack.sh
+  423  neutron agent-list
+  424  nova list
+  425  nova --os-tenant-name=social list
+  426  nova --os-tenant-name=social reset-state cfdc82d1-2004-4de9-b0e0-228346f219e6
+  427  nova --os-tenant-name=social list
+  428  nova --os-tenant-name=social start cfdc82d1-2004-4de9-b0e0-228346f219e6
+  429  nova --os-tenant-name=social reset-state --active cfdc82d1-2004-4de9-b0e0-228346f219e6
+  430  nova --os-tenant-name=social list
+  431  nova --os-tenant-name=social start cfdc82d1-2004-4de9-b0e0-228346f219e6
+  432  nova --os-tenant-name=social reset-state cfdc82d1-2004-4de9-b0e0-228346f219e6
+  433  nova --os-tenant-name=social list
+  434  nova --os-tenant-name=social reset-state --active cfdc82d1-2004-4de9-b0e0-228346f219e6
+  435  nova --os-tenant-name=social list
+  436  nova --os-tenant-name=social reset-state --active cfdc82d1-2004-4de9-b0e0-228346f219e6
+  437  ip netns
+  438  neutron net-list
+  439  ssh 10.240.48.43
+  440  nova --os-tenant-name=social secgroup-list
+  441  nova --os-tenant-name=social secgroup-show
+  442  nova --os-tenant-name=social help | grep secgro
+  443  nova --os-tenant-name=social secgroup-list-rules a3cc7d25-e000-45d5-82b9-d73822d5db92
+  444  nova --os-tenant-name=social secgroup-list-rules d0cec293-c2e3-4fea-bf5f-c78b7ed94405
+  445  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  446  cd /opt/stack/nova && /usr/bin/nova-conductor
+  447  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  448  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  449  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  450  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  451  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  452  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  453  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  454  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  455  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  456  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  457  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  458  /opt/stack/nova && /usr/bin/nova-cert
+  459  cd devstack/
+  460  ./rejoin-stack.sh
+  461  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  462  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  463  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  464  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  465  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  466  cd /opt/stacknder-volume --config-file /etc/cinder/cinder.conf
+  467  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  468  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  469  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  470  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  471  cd /opt/stack/nova && /usr/bin/nova-cert
+  472  cd /opt/stack/nova && /usr/bin/nova-conductor
+  473  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  474  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  475  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  476  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  477  cd /opt/stack/nova && /usr/bin/nova-api
+  478  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  479  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  480  cd devstack/
+  481  ./rejoin-stack.sh
+  482  ps -ef
+  483  neutron agent-list
+  484  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  485  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  486  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  487  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  488  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  489  -backup --config-file /etc/cinder/cinder.conf
+  490  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  491  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  492  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  493  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  494  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  495  neutron agent-list
+  496  brctl show
+  497  iptables -L
+  498  sudo iptables -L
+  499  sudo iptables -L | more
+  500  ps -ef | grep kvm
+  501  ps -ef | grep dns
+  502  neutron agent-list
+  503  sudo ovs-vsctl show
+  504  sudo ovs-vsctl show | more
+  505  ip netns
+  506  ip netns  exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ip addr
+  507  sudo ip netns  exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ip addr
+  508  sudo ip netns  exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ping 10.240.48.43
+  509  neut
+  510  neutron
+  511  nova --os-tenant-name social list
+  512  mysql -u root -p
+  513  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  514  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  515  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  516  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  517  ps -ef | grep dnsmasq
+  518  sudo kill 3940
+  519  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  520  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  521  cd /opt/stack/nova && /usr/bin/nova-api
+  522  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  523  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  524  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  525  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  526  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  527  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  528  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  529  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  530  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  531  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  532  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  533  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  534  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  535  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  536  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  537  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  538  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  539  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  540  cd /opt/stack/nova && /usr/bin/nova-cert
+  541  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+  542  cd /opt/stack/nova && /usr/bin/nova-conductor
+  543  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  544  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  545  cd devstack/
+  546  ls
+  547  ./rejoin-stack.sh
+  548  cd devstack/
+  549  ./rejoin-stack.sh
+  550  ps -ef | grep screen
+  551  kill 4310
+  552  ps -ef | grep screen
+  553  ./rejoin-stack.sh
+  554  ps -ef
+  555  ps -ef | grep cinder
+  556  ps -ef
+  557  ps -ef | grep dnsmasq
+  558  ./rejoin-stack.sh
+  559  source devstack/openrc admin admin
+  560  export PORT11CHAR=`neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-11`
+  561  export PORT10CHAR=`neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-10`
+  562  env
+  563  env | grep PORt
+  564  env | grep PORT
+  565  sudo ovs-vsctl show | grep $PORT11CHAR
+  566  sudo ovs-vsctl show | grep -A3 "Port $PORT11CHAR"
+  567  sudo ovs-vsctl show | grep -A3 "Port \"$PORT11CHAR\""
+  568  sudo ovs-vsctl show | grep -A3 "Port \"${PORT11CHAR}\""
+  569  sudo ovs-vsctl show |
+  570  sudo ovs-vsctl show | grep -A3 "Port \"qvo${PORT11CHAR}\""
+  571  sudo ovs-vsctl show | grep -A2 "Port \"qvo${PORT11CHAR}\""
+  572  sudo ovs-ofctl
+  573  sudo ovs-ofctl show br-int
+  574  sudo ovs-ofctl show br-int | more
+  575  sudo ovs-vsctl show | grep -A2 "Port \"qvo${PORT11CHAR}\""
+  576  sudo ovs-ofctl show br-int | grep -A3 "\(qvo${PORT11CHAR}\)"
+  577  sudo ethtool -S qvo${PORT11CHAR}
+  578  sudo ovs-ofctl show br-int | grep -A3 "^ 3\("
+  579  sudo ovs-ofctl show br-int | grep -A3 "^ 3"
+  580  sudo ovs-ofctl show br-int | grep -A3 "^ 33"
+  581  brctl show
+  582  brctl show qbr${PORT11CHAR}
+  583  iptables -L | grep $PORT10CHAR
+  584  sudo iptables -L | grep $PORT10CHAR
+  585  sudo iptables -L | more
+  586  iptables -L neutron-openvswi-FORWARD
+  587  sudo iptables -L neutron-openvswi-FORWARD
+  588  sudo iptables -L neutron-openvswi-FORWARD | grep $PORT10CHAR
+  589  s iptabls L neutron-openvswi-sg-chain
+  590  sudo iptables -L neutron-openvswi-sg-chain
+  591  sudo iptables -L neutron-openvswi-FORWARD | grep ${PORT10CHAR}
+  592  sudo iptables -L neutron-openvswi-sg-chain | grep ${PORT10CHAR}
+  593  sudo iptables -L neutron-openvswi-i${PORT10CHAR}
+  594  sudo iptables -L neutron-openvswi-o${PORT10CHAR}
+  595  sudo iptables -L neutron-openvswi-s${PORT10CHAR}
+  596  nova --os-tenant-name=social list
+  597  nova --os-tenant-name=social show flux-puppet-001.sec1.cloud.viacom.com
+  598  nova --os-tenant-name=social show flux-puppet-001.sec1.cloud.viacom.com | grep security_groups
+  599  nova --os-tenant-name=social help
+  600  nova --os-tenant-name=social help | grep security group
+  601  nova --os-tenant-name=social help | grep security
+  602  nova --os-tenant-name=social help | grep secgroup
+  603  nova --os-tenant-name=social secgroup-list-rules
+  604  nova --os-tenant-name=social secgroup-list-rules puppetmaster
+  605  nova --os-tenant-name=social show flux-puppet-001.sec1.cloud.viacom.com | grep security_groups
+  606  nova --os-tenant-name=social secgroup-list-rules puppetmaster
+  607  source devstack/openrc admin admin
+  608  nova --os-tenant-name=social list
+  609  nova --os-tenant-name=social service-list
+  610  ls
+  611  nova --os-tenant-name=social list
+  612  nova --os-tenant-name=social get-password win-nettest-1
+  613  nova --os-tenant-name=social get-password win-nettest-1 chris-winkey
+  614  nova --os-tenant-name=social get-password win-nettest-1 chris-winkey.pem
+  615  nova --os-tenant-name=social get-password win-nettest-2 chris-winkey.pem
+  616  nova --os-tenant-name=social get-password win-nettest-3 chris-winkey.pem
+  617  nova --os-tenant-name=social get-password win-nettest-4 chris-winkey.pem
+  618  nova --os-tenant-name=social show win-nettest-1
+  619  seq 4
+  620  for in in $(seq 4); do nova --os-tenant-name=social show win-nettest-1 | egrep (" name"|hypervisor)
+  621  for in in $(seq 4); do nova --os-tenant-name=social show win-nettest-1 | egrep (name|hypervisor); done
+  622  for in in $(seq 4); do nova --os-tenant-name=social show win-nettest-1 | egrep "(name|hypervisor)"; done
+  623  for in in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor)"; done
+  624  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor)"; done
+  625  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor)"; nova --os-tenant-name=social get-password win-nettest-$i chris-winkey.pem; done
+  626  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor)" | awk '{print $2": "$4}'; printf "Admin password: " ; nova --os-tenant-name=social get-password win-nettest-$i chris-winkey.pem; done
+  627  nova --os-tenant-name=social show win-nettest-1
+  628  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor|network| id)" | awk '{print $2": "$4}'; printf "Admin password: " ; nova --os-tenant-name=social get-password win-nettest-$i chris-winkey.pem; done
+  629  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor| id)" | awk '{print $2": "$4}';  nova --os-tenant-name=social show win-nettest-$i | egrep " network" | awk '{print $3": "; printf "Admin password: " ; nova --os-tenant-name=social get-password win-nettest-$i chris-winkey.pem; done
+  630  for i in $(seq 4); do nova --os-tenant-name=social show win-nettest-$i | egrep "(name|hypervisor| id)" | awk '{print $2": "$4}';  nova --os-tenant-name=social show win-nettest-$i | egrep " network" | awk '{print $3": "$2" "$5}'; printf "Admin password: " ; nova --os-tenant-name=social get-password win-nettest-$i chris-winkey.pem; done
+  631  source devstack/openrc admin admin
+  632  nova --os-tenant-name=social show win-nettest-1
+  633  nova --os-tenant-name=social show win-nettest-1 | more
+  634  nova --os-tenant-name=social show win-nettest-2 | more
+  635  nova service-list
+  636  nova help | grep -i service
+  637  nova help service-disable
+  638  nova service-disable WIN-JNUDR2LD3OM nova-compute
+  639  nova service-enable WIN-JNUDR2LD3OM nova-compute
+  640  nova --os-tenant-name=social list
+  641  nova --os-tenant-name=social show win-netxlarge-1
+  642  nova --os-tenant-name=social show win-netxlarge-2
+  643  for i in $(seq 2); do nova --os-tenant-name=social show win-netxlarge-$i | egrep "(name|hypervisor| id)" | awk '{print $2": "$4}';  nova --os-tenant-name=social show win-netxlarge-$i | egrep " network" | awk '{print $3": "$2" "$5}'; printf "Admin password: " ; nova --os-tenant-name=social get-password win-netxlarge-$i chris-winkey.pem; echo ;done
+  644  nova help | grep service
+  645  nova service-list
+  646  cd devstack/
+  647  ./rejoin-stack.sh
+  648  neutron agent-list
+  649  neutron net-list
+  650  neutron port-list
+  651  nova list
+  652  nova --os-tenant-id=social list
+  653  source stackrc admin
+  654  source openrc admin
+  655  nova --os-tenant-id=social list
+  656  nova list
+  657  nova --os-tenant-id=all list
+  658  env
+  659  export OS_USERNAM=social
+  660  export OS_USERNAME=social
+  661  export OS_PASSWORD=weeC4moe
+  662  export OS_TENANT_NAME=social
+  663  nova list
+  664  nova show cfdc82d1-2004-4de9-b0e0-228346f219e6
+  665  neutron port-list
+  666  neutron show dd322ca7-538c-4585-99f9-e1f2f22a4bab
+  667  neutron port-show dd322ca7-538c-4585-99f9-e1f2f22a4bab
+  668  neutron port-list
+  669  neutron port-list | grep '"10.240.48.41"'
+  670  neutron port-list | grep '"10.240.48.41"' |cut -d \| -f 2
+  671  neutron port-list | grep '"10.240.48.41"' |cut -f 2
+  672  neutron port-list | grep '"10.240.48.41"' |awk '{print $2}'
+  673  neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-13
+  674  neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-11
+  675  ps -ef
+  676  ifconfig -a
+  677  ovs-vsctl show
+  678  sudo ovs-vsctl show
+  679  sudo ovs-vsctl --help
+  680  sudo ovs-vsctl port-to-br
+  681  ovs-vsctl show
+  682  sudo ovs-vsctl --help
+  683  sudo ovs-vsctl show
+  684  sudo ovs-vsctl --help
+  685  ovs-vsctl --help | more
+  686  ovs-vsctl port-to-br qvodd322ca7-53
+  687  sudo ovs-vsctl port-to-br qvodd322ca7-53
+  688  sudo ovs-vsctl list-ifaces br-int
+  689  ovs-vsctl show br-int
+  690  ovs-vsctl show
+  691  sudo ovs-vsctl show -f json
+  692  sudo ovs-vsctl -f json show
+  693  sudo ovs-vsctl list
+  694  sudo ovs-vsctl list-br
+  695  sudo ovs-vsctl list-br --fake
+  696  sudo ovs-vsctl --fake list-br
+  697  sudo ovs-vsctl show | grep -A2 qvodd322ca7-53
+  698  sudo ovs-vsctl show | grep -A2 'Port "qvodd322ca7-53"'
+  699  sudo ovs-ofctl dump-flow br-int
+  700  sudo ovs-ofctl dump-flows br-int
+  701  sudo ovs-ofctl dump-flows br-int | grep "vid:2"
+  702  sudo ovs-ofctl dump-flows ovsbridge0 | grep "vid:2148"
+  703  iptables -L
+  704  sudo iptables -L
+  705  sudo iptables -L  | more
+  706  iptables -L neutron-openvswi-oqvodd322ca7-5
+  707  iptables -L neutron-openvswi-odd322ca7-5
+  708  sudo iptables -L neutron-openvswi-odd322ca7-5
+  709  sudo iptables -L neutron-openvswi-idd322ca7-5
+  710  brctl
+  711  brctl show
+  712  brctl show qrbrdd322ca7-5
+  713  brctl show qrbrdd322ca7-53
+  714  brctl show qbrdd322ca7-53
+  715  ip netns
+  716  sudo ip link
+  717  sudo ip link --help
+  718  sudo ip link help
+  719  sudo ip link show qvbdd322ca7-53
+  720  sudo ip link | grep qbrdd322ca7-53
+  721  sudo ip link | grep dd322ca7-53
+  722  ethtool -S qvodd322ca7-5
+  723  sudo ethtool -S qvodd322ca7-53
+  724  sudo ethtool -S qvbdd322ca7-53
+  725  sudo ethtool -S qbrdd322ca7-53
+  726  sudo ip link | grep ovsbridge
+  727  sudo ethtool -S ovsbridge0
+  728  sudo ethtool -S phy-ovsbridge0
+  729  sudo ethtool -S int-ovsbridge0
+  730  sudo ovs-ofctl dump-flows ovsbridge0 | grep 2148
+  731  sudo ovs-ofctl dump-flows br-int | grep 2148
+  732  ovs-vsctl show
+  733  sudo ovs-vsctl show
+  734  sudo ovs-vsctl show ovsbridge
+  735  sudo ovs-vsctl list-ports
+  736  sudo ovs-vsctl list-ports ovsbridge0
+  737  ovs-ofctl show
+  738  ovs-ofctl show help
+  739  ovs-ofctl show ovsbridge0-
+  740  ovs-ofctl show ovsbridge0
+  741  sudo ovs-ofctl show ovsbridge0
+  742  sudo ovs-ofctl show br-int
+  743  ovs-ofctl show ovsbridge0 | egrep "^ 6"
+  744  sudo ovs-ofctl show ovsbridge0 | egrep "^ 6"
+  745  sudo ovs-ofctl show ovsbridge0 | egrep -A3 "^ 6"
+  746  sudo ovs-ofctl show br-int | egrep -A3 "^ 13"
+  747  nova --os-tenant-name=social list | grep flux-puppet-001
+  748  neutron port-list | grep '"10.240.48.41"' |awk '{print $2}'
+  749  neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-11
+  750  export PORT11CHAR=`neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-11`
+  751  export PORT10CHAR=`neutron port-list | grep '"10.240.48.41"' |awk '{print $2}' | cut -c1-10`
+  752  env
+  753  env | grep PORT
+  754  df -hP
+  755  cd /var/
+  756  vgs
+  757  sudo vgs
+  758  sudo /sbin/lvextend -L +377G /dev/metalvg0/var
+  759  sudo /sbin/resize2fs /dev/metalvg0/var
+  760  df -hP
+  761  sudo /sbin/lvextend -L +100 /dev/metalvg0/var
+  762  sudo /sbin/lvextend -L +100G /dev/metalvg0/var
+  763  sudo /sbin/lvextend -L +400G /dev/metalvg0/opt
+  764  sudo /sbin/resize2fs /dev/metalvg0/opt
+  765  cd /var
+  766  ls
+  767  sudo du -sh `ls -1`
+  768  cd log/
+  769  ls
+  770  sudo du -sh `ls -1`
+  771  cd libvirt/
+  772  ls
+  773  sudo du -sh `ls -1`
+  774  cd libvirt/
+  775  sudo -s
+  776  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  777  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  778  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  779  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  780  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  781  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  782  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  783  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  784  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  785  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  786  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  787  cd /opt/stack/nova && /usr/bin/nova-conductor
+  788  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  789  cd /opt/stack/neutron && /usr/bin/neutron-vpn-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/l3_agent.ini --config-file /etc/neutron/fwaas_driver.ini
+  790  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  791  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  792  cd /opt/stack/nova && /usr/bin/nova-api
+  793  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  794  cd /opt/stack/glance; /usr/bin/glance-registry --config-file=/etc/glance/glance-registry.conf
+  795  cd /opt/stack/devstack/
+  796  sudo yum update
+  797  rpm -qa | grep -i switch
+  798  rpm -qa | grep -i qemu
+  799  yum update qemu-kvm openvswitch python-openvswitch
+  800  sudo yum update qemu-kvm openvswitch python-openvswitch
+  801  cd /opt/stack/devstack/
+  802  ./rejoin-stack.sh
+  803  sudo -s
+  804  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  805  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  806  ifconfig -a
+  807  ps -ef | grep dhcp
+  808  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  809  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  810  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  811  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  812  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  813  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  814  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-backup --config-file /etc/cinder/cinder.conf
+  815  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  816  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  817  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  818  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  819  cd /opt/stack/nova && /usr/bin/nova-cert
+  820  nova-conductor
+  821  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  822  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  823  cd /opt/stack/neutron && python /usr/bin/neutron-openvswitch-agent --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  824  cd /opt/stack/devstack/
+  825  ./rejoin-stack.sh
+  826  su -
+  827  sudo ip netns
+  828  ovs-ofctl bond/show
+  829  ovs-ofctl dump-flows
+  830  ovs-ofctl dump-flows ovsbridge
+  831  ovs-ofctl dump-flows ovsbridge0
+  832  sudo ovs-ofctl dump-flows ovsbridge0
+  833  sudo ovs-ofctl dump-flows br-int
+  834  sudo /sbin/ifconfig -a
+  835  sudo ovsctl show
+  836  sudo ovs-vsctl show
+  837  sudo ovs-vsctl show
+  838  sudo ovs-vsctl show  | more
+  839  neutron
+  840  sudo /sbin/init 6
+  841  nova service-list
+  842  neutron agent-list
+  843  nova service-list
+  844  neutron agent-list
+  845  nova service-list
+  846  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  847  nt-list
+  848  nova service-list
+  849  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  850  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  851  cd /opt/stack/heat; bin/heat-engine --config-file=/etc/heat/heat.conf
+  852  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-volume --config-file /etc/cinder/cinder.conf
+  853  cd ; ceilometer-agent-central --config-file /etc/ceilometer/ceilometer.conf
+  854  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  855  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  856  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  857  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  858  cd /opt/stack/nova && /usr/bin/nova-cert
+  859  cd /opt/stack/nova && sg libvirtd '/usr/bin/nova-compute --config-file /etc/nova/nova.conf'
+  860  va-xvpvncproxy --config-file /etc/nova/nova.conf
+  861  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  862  cd /opt/stack/nova && /usr/bin/nova-cert
+  863  cd /opt/stack/nova && /usr/bin/nova-conductor
+  864  cd /opt/stack/neutron && python /usr/bin/neutron-lbaas-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini
+  865  cd /opt/stack/neutron && python /usr/bin/neutron-metadata-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/metadata_agent.ini
+  866  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  867  cd /opt/stack/nova && /usr/bin/nova-api
+  868  cd /opt/stack/glance; /usr/bin/glance-api --config-file=/etc/glance/glance-api.conf
+  869  cd /opt/stack/horizon && sudo tail -f /var/log/httpd/horizon_error.log
+  870  sudo ovs-vsctl show
+  871  sudo ip netns
+  872  exit
+  873  cd /opt/stack/devstack/
+  874  ./rejoin-stack.sh
+  875  sudo ovs-vsctl show
+  876  neutron agent-list
+  877  ps -ef
+  878  ps -ef | grep dns
+  879  neutron agent-list
+  880  ps -ef
+  881  ps -ef | grep dnsm
+  882  neutron net-list
+  883  cd /opt/stack/neutron && python /usr/bin/neutron-dhcp-agent --config-file /etc/neutron/neutron.conf --config-file=/etc/neutron/dhcp_agent.ini
+  884  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  885  cd ; ceilometer-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  886  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  887  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-api --config-file /etc/cinder/cinder.conf
+  888  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  889  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  890  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  891  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  892  er-api -d -v --log-dir=/var/log/ceilometer-api --config-file /etc/ceilometer/ceilometer.conf
+  893  cd /opt/stack/cinder && /opt/stack/cinder/bin/cinder-scheduler --config-file /etc/cinder/cinder.conf
+  894  nf
+  895  pwd
+  896  ls
+  897  vi restart-stack.sh
+  898  cd devstack/
+  899  ls
+  900  cd ..
+  901  cat restart-stack.sh
+  902  chmod +x restart-stack.sh
+  903  mv restart-stack.sh isg-restart-stack.sh
+  904  nslookup flux-puppet-001.sec1.cloud.viacom.com
+  905  sssh flux-puppet-001.sec1.cloud.viacom.com
+  906  ssh flux-puppet-001.sec1.cloud.viacom.com
+  907  ip netns
+  908  ip netns exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35
+  909  ip netns exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ip addr
+  910  sudo ip netns exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ip addr
+  911  sudo ip netns exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ping 10.240.48.41
+  912  sudo ip netns exec qdhcp-5639a46a-6565-4a64-9c17-67a5416d0b35 ssh 10.240.48.41
+  913  pwd
+  914  vim neturoncheck.sh
+  915  lll
+  916  ll
+  917  chmod +x neturoncheck.sh
+  918  ./neturoncheck.sh
+  919  rm neturoncheck.sh
+  920  exit
+  921  ls -l
+  922  cat isg-restart-stack.sh
+  923  source devstack/openrc admin
+  924  neutron agent-list
+  925  cd devstack/
+  926  ll
+  927  ./stack.sh
+  928  cd
+  929  ll
+  930  ./isg-restart-stack.sh
+  931  cd /opt/stack/neutron && python /usr/bin/neutron-server --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini
+  932  cd /opt/stack/nova && /usr/bin/nova-api
+  933  cd /opt/stack/keystone && /opt/stack/keystone/bin/keystone-all --config-file /etc/keystone/keystone.conf --log-config /etc/keystone/logging.conf -d --debug
+  934  cd /opt/stack/heat; bin/heat-api-cloudwatch --config-file=/etc/heat/heat.conf
+  935  cd /opt/stack/heat; bin/heat-api-cfn --config-file=/etc/heat/heat.conf
+  936  cd /opt/stack/heat; bin/heat-api --config-file=/etc/heat/heat.conf
+  937  cd ; ceilometer-collector --config-file /etc/ceilometer/ceilometer.conf
+  938  cd /opt/stack/nova && /usr/bin/nova-objectstore
+  939  cd /opt/stack/nova && /usr/bin/nova-consoleauth
+  940  cd /opt/stack/nova && /usr/bin/nova-xvpvncproxy --config-file /etc/nova/nova.conf
+  941  cd /opt/stack/nova && /usr/bin/nova-novncproxy --config-file /etc/nova/nova.conf --web /opt/stack/noVNC
+  942  cd /opt/stack/nova && /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf
+  943  cd /opt/stack/nova && /usr/bin/nova-cert
+  944  source devstack/openrc admin
+  945  ls -l
+  946  neutron agent-list
+  947  nova service list
+  948  history | grep nova
+  949  nova service-list
+  950  cd devstack/
+  951  ls -l
+  952  ./isg-restart-stack.sh
+  953  ll
+  954  cd /var/log/
+  955  ll
+  956  history
+  957  ifconfig
+  958  neutron service-list
+  959  cd
+  960  source devstack/openrc admin
+  961  neutron service-list
+  962  neutron service
+  963  neutron agent-list
+  964  history | grep -i stack.sh
+  965  source devstack/openrc admin
+  966  ls -l
+  967  neutron agent-list
+  968  nova service list
+  969  history | grep nova
+  970  nova service-list
+  971  cd devstack/
+  972  ls -l
+  973  ./isg-restart-stack.sh
+  974  ll
+  975  cd /var/log/
+  976  ll
+  977  history
+  978  ifconfig
+  979  neutron service-list
+  980  cd
+  981  source devstack/openrc admin
+  982  neutron service-list
+  983  neutron service
+  984  neutron agent-list
+  985  sudo su
+  986  history
+  987  history | less
+  988  history
+  989  history
+  990  exit
+  991  history
+  992  vi $HISTFILE
+  993  clear
+  994  history
+  995  exit
+  996  clear
+  997  history
