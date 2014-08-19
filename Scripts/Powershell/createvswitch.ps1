@@ -1,1 +1,1 @@
-New-VMSwitch external -NetAdapterName hvswitch0 -AllowManagementOS $True
+New-VMSwitch -name hvswitch0 -NetAdapterName "team0" -AllowManagementOS $True
